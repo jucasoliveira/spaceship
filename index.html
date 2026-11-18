@@ -604,6 +604,7 @@
       }
       #mode-toggle,
       #sound-toggle,
+      #voice-toggle,
       #extra-link {
         padding: 0 var(--gap);
         border: none;
@@ -644,7 +645,11 @@
       #extra-link {
         text-decoration: none;
       }
-      #sound-toggle[aria-pressed="false"] {
+      #voice-toggle[hidden] {
+        display: none;
+      }
+      #sound-toggle[aria-pressed="false"],
+      #voice-toggle[aria-pressed="false"] {
         color: var(--ink-4);
       }
       /* Asks for the API keys each time live mode is entered. */
@@ -872,6 +877,7 @@
       <button id="mode-toggle" type="button" aria-pressed="false" aria-label="flight mode">mode<b>sim</b></button>
       <output id="status" aria-live="off"></output>
       <button id="sound-toggle" type="button" aria-pressed="true" aria-label="sound">♪<b>on</b></button>
+      <button id="voice-toggle" type="button" aria-pressed="true" aria-label="voice" hidden>♫<b>on</b></button>
       <a id="extra-link" href="extra/style-1.html">extra</a>
     </footer>
     <dialog id="live-keys" aria-labelledby="live-keys-title" aria-describedby="live-keys-note" closedby="closerequest">
@@ -900,6 +906,21 @@
             name="gemini"
             type="text"
             required
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            data-1p-ignore
+            data-lpignore="true"
+            data-bwignore
+            data-form-type="other"
+        /></label>
+        <label
+          >elevenlabs
+          <input
+            name="elevenlabs"
+            type="text"
+            placeholder="optional, narrates the story"
             autocomplete="off"
             autocapitalize="off"
             autocorrect="off"

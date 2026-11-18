@@ -27,6 +27,9 @@ import { simulatedDimension } from "./simulated-dimension.ts"
 import { simulatedInfluence } from "./simulated-influence.ts"
 import { simulatedRealization } from "./simulated-realization.ts"
 import { simulatedRelevance } from "./simulated-relevance.ts"
+import { storedApiKey as storedVoiceKey, streamSpeech } from "../speech/elevenlabs.ts"
+import { createNarrator } from "../speech/narrator.ts"
+import { createPcmPlayer } from "../speech/pcm-player.ts"
 import { isSoundOn, setSoundOn, startSound, type Sound } from "./sound/engine.ts"
 import { sounds } from "./sound/sounds.ts"
 import { showStatus } from "./status-line.ts"
@@ -55,6 +58,7 @@ const element = $("#text")
 const handle = $<HTMLButtonElement>("#pointer")
 const statusElement = $("#status")
 const soundToggle = $<HTMLButtonElement>("#sound-toggle")
+const voiceToggle = $<HTMLButtonElement>("#voice-toggle")
 const modeToggle = $<HTMLButtonElement>("#mode-toggle")
 const extraLink = $<HTMLAnchorElement>("#extra-link")
 const railElement = $("#rail")
@@ -66,6 +70,10 @@ measure.font = style.font
 
 const isLive = new URLSearchParams(location.search).get("live") === "true"
 const stream = createTextStream(isLive ? liveSource : simulatedSource, render)
+const voiceKey = isLive ? storedVoiceKey() : undefined
+const narrator = voiceKey
+  ? createNarrator({ source: { speak: (text, signal) => streamSpeech({ apiKey: voiceKey, text, signal }) }, player: createPcmPlayer() })
+  : undefined
 const rail = createLeftRail(railElement)
 const connections = createConnections({ source: isLive ? liveInfluence : simulatedInfluence, onChange: refreshRail })
 const relevance = createKeywordRelevance(isLive ? liveRelevance : simulatedRelevance, refreshRail)
@@ -126,6 +134,16 @@ soundToggle.addEventListener("click", () => {
   setSoundOn(!isSoundOn())
   showSoundToggle()
 })
+
+if (narrator) {
+  voiceToggle.hidden = false
+  voiceToggle.addEventListener("click", () => {
+    const isOn = voiceToggle.getAttribute("aria-pressed") !== "true"
+    narrator.setOn(isOn)
+    voiceToggle.setAttribute("aria-pressed", `${isOn}`)
+    voiceToggle.querySelector("b")!.textContent = isOn ? "on" : "off"
+  })
+}
 
 // A quick double click expands or collapses; one whose second press was held opened the fan menu instead.
 handle.addEventListener("dblclick", () => (didHold ? (didHold = false) : detachAllOrExpand()))
@@ -233,6 +251,7 @@ function render() {
   if (element.textContent !== story.content) element.textContent = story.content
   connections.update(story)
   shownText = text
+  narrator?.update(text)
   attention.update(text)
   futureKnobs.follow(story)
   report()
@@ -349,6 +368,7 @@ function pointerTargets(): PointerTarget[] {
     })),
     { rects: [modeToggle.getBoundingClientRect()], pad: TRAY_PAD_PX, isHotOnHover: true, wake: modeToggle },
     { rects: [soundToggle.getBoundingClientRect()], pad: TRAY_PAD_PX, isHotOnHover: true, wake: soundToggle },
+    ...(voiceToggle.hidden ? [] : [{ rects: [voiceToggle.getBoundingClientRect()], pad: TRAY_PAD_PX, isHotOnHover: true, wake: voiceToggle }]),
     { rects: [extraLink.getBoundingClientRect()], pad: TRAY_PAD_PX, isHotOnHover: true, wake: extraLink },
   ]
 }
