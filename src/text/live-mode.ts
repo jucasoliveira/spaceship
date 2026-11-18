@@ -1,12 +1,13 @@
 import { KEY_STORAGE as CEREBRAS_KEY_STORAGE } from "../llm/cerebras.ts"
 import { KEY_STORAGE as GEMINI_KEY_STORAGE } from "../llm/decisions.ts"
+import { KEY_STORAGE as ELEVENLABS_KEY_STORAGE } from "../speech/elevenlabs.ts"
 
 /** Each key's field in the dialog's form, by name, and where it is kept for reuse. */
-const KEY_FIELDS = { cerebras: CEREBRAS_KEY_STORAGE, gemini: GEMINI_KEY_STORAGE }
+const KEY_FIELDS = { cerebras: CEREBRAS_KEY_STORAGE, gemini: GEMINI_KEY_STORAGE, elevenlabs: ELEVENLABS_KEY_STORAGE }
 
 /**
  * Sim plays simulated sources; flight calls the models. The sources are chosen when the page loads, so switching reloads it in the other mode.
- * Launching always asks for both API keys first, prefilled with the ones kept from last time; the dialog's submit button returns "live".
+ * Launching always asks for the API keys first; the elevenlabs key is optional and turns on narration, prefilled with the ones kept from last time; the dialog's submit button returns "live".
  */
 export function bindModeToggle(toggle: HTMLButtonElement, dialog: HTMLDialogElement, isLive: boolean) {
   const form = dialog.querySelector("form")!
